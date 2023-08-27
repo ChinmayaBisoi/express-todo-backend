@@ -10,7 +10,7 @@ const connectDB = require("./config/dbConn");
 const app = express();
 const PORT = config.port;
 
-connectDB();
+// connectDB();
 
 app.use(cors(config.corsOptions));
 app.use(express.json());
@@ -21,19 +21,21 @@ app.get("/", (req, res) => {
   res.send("hello there");
 });
 
-app.use("/users", require("./routes/userRoute.js"));
+// app.use("/users", require("./routes/userRoute.js"));
 
-//protected with middleware verifyJWT for owner side
-app.use("/todos", require("./routes/todoRoute"));
+// //protected with middleware verifyJWT for owner side
+// app.use("/todos", require("./routes/todoRoute"));
 
-//for authentication
-app.use("/auth", require("./routes/authRoute"));
+// //for authentication
+// app.use("/auth", require("./routes/authRoute"));
 
-mongoose.connection.once("open", () => {
-  console.log("connected to DB");
-  app.listen(PORT, () => console.log(`server is running on PORT ${PORT}`));
-});
+// mongoose.connection.once("open", () => {
+//   console.log("connected to DB");
+//   app.listen(PORT, () => console.log(`server is running on PORT ${PORT}`));
+// });
 
-mongoose.connection.on("error", (err) => {
-  console.log(err);
-});
+// mongoose.connection.on("error", (err) => {
+//   console.log(err);
+// });
+
+app.listen(PORT, () => console.log(`server is running on PORT ${PORT}`));
