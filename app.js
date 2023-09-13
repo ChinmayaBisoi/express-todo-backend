@@ -21,6 +21,15 @@ app.get("/", (req, res) => {
   res.send("hello there");
 });
 
+app.use((req, res, next) => {
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://cbi-todo-app.vercel.app"
+  );
+  // Add other CORS headers if needed (e.g., methods, headers, etc.)
+  next();
+});
+
 app.use("/users", require("./routes/userRoute.js"));
 
 //protected with middleware verifyJWT for owner side
