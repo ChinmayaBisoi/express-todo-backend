@@ -1,47 +1,66 @@
-const User = require("../models/User");
+const Todo = require("../models/Todo");
+
+const getAllTodos = async (req, res) => {
+  try {
+    const { id, email } = req.userInfo;
+    const todos = await Todo.find({
+      $and: [{ userEmail: email }, { userId: id }, { isDeleted: false }],
+    });
+    return res.status(200).json({ ok: true, todos });
+  } catch (err) {
+    return res.status(500).json({ message: `Unexpected Error : ${err}` });
+  }
+};
 
 const getTodoById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) {
-      return res.status(400).json({ message: "Id is required" });
+      return res.status(400).json({ message: "Todo id is required" });
     }
-    var hotel = await Hotels.findById(id).exec();
-    if (!hotel || hotel.isDeleted) {
-      return res.status(400).json({ message: "Hotel not found" });
+    const todo = await Todo.findById(id).exec();
+    if (!todo) {
+      return res
+        .status(400)
+        .json({ ok: true, message: "Todo not found", todo });
     }
-    res.json(hotel);
+
+    return res.status(200).json({ ok: true, todo });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Something went wrong" });
+    return res.status(500).json({ message: `Unexpected err : ${err}` });
   }
 };
 
 const addTodo = async (req, res) => {
   try {
-    const { id } = req.userInfo;
-    const { name, state, district, pincode, address, image, socialMedia } =
-      req.body;
-    if (!name || !state || !district || !pincode || !image) {
-      return res.status(400).json({ message: "All fields are required" });
+    const { id, email } = req.userInfo;
+    const { title, description, isChecked } = req.body;
+    if (!title || !description) {
+      return res.status(400).json({
+        message: "Title, description are required fields",
+      });
     }
-    const duplicate = await Hotels.findOne({ userId: id }).exec();
-    if (duplicate && !duplicate.isDeleted) {
-      return res
-        .status(400)
-        .json({ message: "One user can have maximum of 1 hotel" });
+
+    if (!id) {
+      return res.status(400).json({
+        message: "Unauthorized : User id invalid",
+      });
     }
-    const hotelObj = {
+
+    const todoObj = {
       userId: id,
-      name: name,
-      state: state,
-      district: district,
-      pincode: pincode,
-      image: image,
-      socialMedia: socialMedia,
+      title,
+      description,
+      isChecked: !!isChecked,
+      userEmail: email,
     };
-    const hotel = await Hotels.create(hotelObj);
-    if (store) res.status(201).json({ message: `New hotel ${name} created` });
+
+    const todo = await Todo.create(todoObj);
+    if (todo)
+      res
+        .status(201)
+        .json({ ok: true, message: `Todo created successfully`, todo });
     else res.status(400).json({ message: "Invalid data found" });
   } catch (ex) {
     console.log(err);
@@ -49,53 +68,67 @@ const addTodo = async (req, res) => {
   }
 };
 
+// To be updated
 const updateTodo = async (req, res) => {
   try {
-    const { id, name, state, district, pincode, address, image, socialMedia } =
-      req.body;
+    console.log("updateTodo called");
+    const { title, description, id } = req.body;
     if (!id) {
-      return res.status(400).json({ message: "Id is required" });
+      return res.status(400).json({ message: "Todo Id is required" });
     }
 
-    const hotel = await Hotels.findById(id).exec();
-
-    if (!hotel) {
-      return res.status(400).json({ message: "hotel not found" });
+    if (!title || !description) {
+      return res
+        .status(400)
+        .json({ message: "Title, description are required fields" });
     }
 
-    name ? (hotel.name = name) : (hotel.name = hotel.name);
-    state ? (hotel.state = state) : (hotel.state = hotel.state);
-    district ? (hotel.district = district) : (hotel.district = hotel.district);
-    pincode ? (hotel.pincode = pincode) : (hotel.pincode = hotel.pincode);
-    address ? (hotel.address = address) : (hotel.address = hotel.address);
-    image ? (hotel.image = image) : (hotel.image = hotel.image);
-    socialMedia
-      ? (hotel.socialMedia = socialMedia)
-      : (hotel.socialMedia = hotel.socialMedia);
+    const todo = await Todo.findById(id).exec();
 
-    const newHotel = await hotel.save();
-    res.status(201).json({ message: `hotel ${name} updated successfully` });
+    if (!todo) {
+      return res.status(400).json({ message: "Todo not found" });
+    }
+
+    title ? (todo.title = title) : (todo.title = todo.title);
+    description
+      ? (todo.description = description)
+      : (todo.description = todo.description);
+    todo.updatedAt = new Date().toUTCString();
+
+    const newTodo = await todo.save();
+
+    return res
+      .status(201)
+      .json({ ok: true, message: `Todo updated successfully`, todo: newTodo });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Something went wrong" });
+    return res
+      .status(500)
+      .json({ message: "Something went wrong in updateTodo" });
   }
 };
 
 const deleteTodoById = async (req, res) => {
   try {
-    const { id } = req.body;
-    if (!id) return res.json(400).json({ message: "id is required" });
+    const { id } = req.params;
+    if (!id) return res.json(400).json({ message: "Todo id is required" });
 
-    const hotel = await Hotels.findById(id).exec();
+    const todo = await Todo.findById(id).exec();
 
-    if (!hotel) return res.json(400).json({ message: "Hotel not found" });
+    if (!todo) return res.json(400).json({ message: "Todo not found" });
 
-    hotel.isDeleted = true;
-    await hotel.save();
-    res.status(200).json({ message: `Deleted successfully` });
+    todo.isDeleted = true;
+    const deletedTodo = await todo.save();
+    return res.status(200).json({
+      ok: true,
+      message: `Todo deleted successfully`,
+      todo: deletedTodo,
+    });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Something went wrong" });
+    return res
+      .status(500)
+      .json({ message: "Something went wrong in deleteTodoById" });
   }
 };
 
@@ -104,4 +137,5 @@ module.exports = {
   addTodo,
   updateTodo,
   deleteTodoById,
+  getAllTodos,
 };

@@ -2,32 +2,21 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const isValidRegisterRequest = ({ firstName, lastName, email, password }) => {
-  if (!firstName) {
-    return "Firstname is missing";
-  }
-  if (!lastName) {
-    return "Lastname is missing";
-  }
+const isValidRegisterRequest = ({ email, password }) => {
   if (!email) {
     return "Email is missing";
   }
   if (!password) {
     return "Password is missing";
   }
-  if (password?.length < 8) {
-    return "Password too short";
-  }
 };
 
 const register = async (req, res) => {
   try {
-    var { firstName, lastName, email, password } = req.body;
+    var { email, password } = req.body;
     console.log("register function called");
 
     const errorMsg = isValidRegisterRequest({
-      firstName,
-      lastName,
       email,
       password,
     });
@@ -45,15 +34,12 @@ const register = async (req, res) => {
     }
     let hashedPassword = await bcrypt.hash(password, 10);
     const userObj = {
-      firstName: firstName,
-      lastName: lastName,
       email: email,
       password: hashedPassword,
-      roleId: 2,
     };
     const user = await User.create(userObj);
     if (user) {
-      res.status(201).json({ message: "User created " });
+      res.status(201).json({ ok: true, message: "User created " });
     } else {
       res.status(400).json({ message: "Invalid User data received" });
     }
@@ -65,6 +51,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
+    console.log("login function called");
     const { email, password } = req.body;
     if (!email || !password) {
       return res.staus(400).json({ message: "All Fields are required" });
@@ -94,29 +81,52 @@ const login = async (req, res) => {
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "7d" }
     );
-    res.cookie("jwt", accessToken, {
+    res.cookie("todoapp_jwt", accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: "None",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.json({ accessToken });
+    res.json({ ok: true, accessToken, email, userId: foundOne._id });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Something went wrong" });
+    return res
+      .status(500)
+      .json({ message: "Something went wrong in login function" });
   }
 };
 
 const logout = async (req, res) => {
   const cookies = req.cookies;
-  if (!cookies.jwt) return res.sendStatus(204);
-  res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
-  res.json({ message: "cookie cleared" });
+  if (!cookies.todoapp_jwt) return res.sendStatus(204);
+  res.clearCookie("todoapp_jwt", {
+    httpOnly: true,
+    sameSite: "None",
+    secure: true,
+  });
+  return res.json({ ok: true, message: "User logged out, cookie cleared" });
+};
+
+const checkAuth = async (req, res) => {
+  console.log("checkAuth function called");
+  const accessToken = req.cookies.todoapp_jwt;
+  if (!accessToken) {
+    return res.status(401).json({ message: "Unauthorized : Token not found" });
+  }
+  if (!req.userInfo) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized : UserInfo not found" });
+  }
+  return res
+    .status(200)
+    .json({ ok: true, message: "Token verified", userInfo: req.userInfo });
 };
 
 module.exports = {
   register,
   login,
   logout,
+  checkAuth,
 };
