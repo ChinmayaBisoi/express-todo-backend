@@ -8,7 +8,7 @@ const allowedOrigins = [
 ];
 
 const config = {
-  port: process.env.PORT || 3500,
+  port: process.env.PORT || 8080,
   corsOptions: corsOptions,
   databaseUri: process.env.DATABASE_URI || "",
   origin: function (origin, callback) {
