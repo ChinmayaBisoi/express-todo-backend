@@ -24,7 +24,7 @@ app.get("/", (req, res) => {
 app.use((req, res, next) => {
   res.setHeader(
     "Access-Control-Allow-Origin",
-    "https://cbi-todo-app.vercel.app"
+    "https://cbi-todo-app.vercel.app/"
   );
   // Add other CORS headers if needed (e.g., methods, headers, etc.)
   next();
