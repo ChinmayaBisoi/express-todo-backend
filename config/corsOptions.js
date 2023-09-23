@@ -1,17 +1,19 @@
-const allowedOrigins = require("./allowedOrigins");
-
 const corsOptions = {
   origin: (origin, callback) => {
-    console.log(allowedOrigins, origin, callback);
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "https://cbi-todo-app.vercel.app",
+    ];
+    console.log("origin ->", origin);
+    if (allowedOrigins.includes(origin) || !origin) {
       callback(null, true);
     } else {
       console.log("problem here in corsOptions");
-      callback(new Error("NOt allowed by CORS"));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
-  optionSuccessStatus: 200,
+  optionsSuccessStatus: 200,
 };
 
 module.exports = corsOptions;
