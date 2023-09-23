@@ -16,20 +16,6 @@ app.use(cors(config.corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "https://cbi-todo-app.vercel.app/"
-  );
-  // Add other CORS headers if needed (e.g., methods, headers, etc.)
-  next();
-});
-
 app.get("/", (req, res) => {
   console.log("working properly");
   res.send("hello there");
