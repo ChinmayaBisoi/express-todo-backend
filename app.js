@@ -16,11 +16,6 @@ app.use(cors(config.corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
-  console.log("working properly");
-  res.send("hello there");
-});
-
 app.use((req, res, next) => {
   res.setHeader(
     "Access-Control-Allow-Origin",
@@ -28,6 +23,11 @@ app.use((req, res, next) => {
   );
   // Add other CORS headers if needed (e.g., methods, headers, etc.)
   next();
+});
+
+app.get("/", (req, res) => {
+  console.log("working properly");
+  res.send("hello there");
 });
 
 app.use("/users", require("./routes/userRoute.js"));
