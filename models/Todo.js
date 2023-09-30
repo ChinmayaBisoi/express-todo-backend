@@ -12,15 +12,20 @@ const todoSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      required: true,
+    },
+    description: {
+      type: String,
     },
     isChecked: {
       type: Boolean,
       default: false,
     },
-    description: {
-      type: String,
-      required: true,
+    isPinned: {
+      type: Boolean,
+      default: false,
+    },
+    labels: {
+      type: [String],
     },
     isDeleted: {
       type: Boolean,

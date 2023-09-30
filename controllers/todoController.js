@@ -35,7 +35,7 @@ const getTodoById = async (req, res) => {
 const addTodo = async (req, res) => {
   try {
     const { id, email } = req.userInfo;
-    const { title, description, isChecked } = req.body;
+    const { title, description, isChecked, isPinned, labels } = req.body;
     if (!title || !description) {
       return res.status(400).json({
         message: "Title, description are required fields",
@@ -52,6 +52,8 @@ const addTodo = async (req, res) => {
       userId: id,
       title,
       description,
+      isPinned,
+      labels,
       isChecked: !!isChecked,
       userEmail: email,
     };
@@ -72,7 +74,7 @@ const addTodo = async (req, res) => {
 const updateTodo = async (req, res) => {
   try {
     console.log("updateTodo called");
-    const { title, description, id } = req.body;
+    const { title, description, id, isPinned, labels } = req.body;
     if (!id) {
       return res.status(400).json({ message: "Todo Id is required" });
     }
@@ -93,8 +95,10 @@ const updateTodo = async (req, res) => {
     description
       ? (todo.description = description)
       : (todo.description = todo.description);
+    isPinned ? (todo.isPinned = isPinned) : (todo.isPinned = todo.isPinned);
+    labels ? (todo.labels = labels) : (todo.labels = todo.labels);
     todo.updatedAt = new Date().toUTCString();
-
+    console.log(todo);
     const newTodo = await todo.save();
 
     return res

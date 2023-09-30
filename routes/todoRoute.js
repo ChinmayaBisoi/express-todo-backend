@@ -6,7 +6,7 @@ const verifyJWT = require("../middlewares/verifyJWT");
 router.use(verifyJWT);
 router.get("/all", todoController.getAllTodos);
 router.get("/:id", todoController.getTodoById);
-router.post("/", todoController.addTodo);
+router.post("/add", todoController.addTodo);
 router.patch("/", todoController.updateTodo);
 router.delete("/:id", todoController.deleteTodoById);
 
